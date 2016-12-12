@@ -1,0 +1,179 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>地区联动</title>
+<link href="css/align.css" rel="stylesheet" type="text/css">
+<link href="css/layout.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+</head>
+
+<body>
+
+
+<div class="areaSelect" id="areaSelect">
+
+
+  <div id="province" class="areaBox">
+     <p class="slected_value"><span class="sel_name">省份</span> <i class="trang"></i></p>
+     <div class="selectBox">
+      <ul>
+        <li>广东</li>       
+      </ul>
+     </div>  
+  </div>
+  
+  
+  <div id="city" class="areaBox">
+     <p class="slected_value"><span class="sel_name">城市</span> <i class="trang"></i></p>
+     <div class="selectBox">
+      <ul>
+        <li>深圳</li>      
+      </ul>
+     </div>  
+  </div>
+  
+  
+  
+  <div id="district" class="areaBox">
+     <p class="slected_value"><span class="sel_name">地区</span> <i class="trang"></i></p>
+     <div class="selectBox">
+      <ul>
+        <li>福田</li>           
+      </ul>
+     </div>  
+  </div>
+  
+
+</div>
+
+
+
+<script src="js/address.js"></script>
+<script type="text/javascript">
+    //$(document).ready(function (e) {
+    //    $(".areaBox").hover(function () {
+    //        $(this).children(".selectBox").stop(false, true).slideDown(300);
+    //        $(this).children(".slected_value").children(".trang").addClass("actived");
+    //    }, function () {
+    //        $(this).children(".selectBox").stop(false, true).slideUp(300);
+    //        $(this).children(".slected_value").children(".trang").removeClass("actived");
+    //    });
+    //});
+
+    addressHelper("province", "city", "district");
+
+    function addressHelper(provinceIdName, cityIdName, districtIdName) {
+        var provList = '', cityList = '', districtList = ''; //数据列表拼接
+        var provBox = $("#" + provinceIdName), cityBox = $("#" + cityIdName), districtBox = $("#" + districtIdName);
+        var provListBox = provBox.find("ul"), cityListBox = cityBox.find("ul"), districtListBox = districtBox.find("ul"); //数据列表
+        var provSel = provBox.find(".sel_name"), citySel = cityBox.find(".sel_name"), districtSel = districtBox.find(".sel_name"); //选中的地名
+
+        //列表初始化，默认北京的地区
+        var addressInit = function () {
+            for (var i = 0; i < provinceList.length; i++) {
+                var cur = provinceList[i];
+                provList += '<li>' + cur.name + '</li>';
+            }
+            for (var i = 0; i < provinceList[0].cityList.length; i++) {
+                var cur = provinceList[0].cityList[i];
+                cityList += '<li>' + cur.name + '</li>';
+            }
+            for (var i = 0; i < provinceList[0].cityList[0].areaList.length; i++) {
+                var cur = provinceList[0].cityList[0].areaList[i];
+                districtList += '<li>' + cur + '</li>';
+            }
+
+            provListBox.html(provList);
+            cityListBox.html(cityList);
+            districtListBox.html(districtList);
+
+            provSel.text(provinceList[0].name);
+            citySel.text(provinceList[0].cityList[0].name);
+            districtSel.text(provinceList[0].cityList[0].areaList[0]);
+
+            addEvent.clickEvent();
+            addEvent.showEvent();
+            addEvent.hideEvent();
+        };
+
+        var addEvent = {
+            clickEvent: function () {
+                areaSelect.addEventListener("click", function (e) {
+                    if (e.target && e.target.nodeName == "LI") { //列表项的点击事件
+                        var curElement = e.target;
+                        var parElement = $(curElement).parents(".areaBox");
+                        $(".areaBox").children(".selectBox").stop(false, true).slideUp(300);
+                        $(".areaBox").children(".slected_value").children(".trang").removeClass("actived");
+                        parElement.find(".sel_name").text(curElement.innerHTML); //设置选中的地名
+                        switch (parElement[0].id) {
+                            case provinceIdName:
+                                addEvent.provinceChange();
+                                break;
+                            case cityIdName:
+                                addEvent.cityChange();
+                                break;
+                        }
+                    }
+                });
+            },
+            showEvent: function () {
+                areaSelect.addEventListener("mouseover", function (e) {
+                    if (e.target && (e.target.className == "slected_value" || e.target.className == "sel_name")) { //展示列表
+                        var parElement = $(e.target).parents(".areaBox");
+                        parElement.children(".selectBox").stop(false, true).slideDown(300);
+                        parElement.children(".slected_value").children(".trang").addClass("actived");
+                    }
+                });
+            },
+            hideEvent: function () {
+                areaSelect.addEventListener("mouseleave", function (e) {
+                    $(".areaBox").children(".selectBox").stop(false, true).slideUp(300);
+                    $(".areaBox").children(".slected_value").children(".trang").removeClass("actived");
+                });
+            },
+            provinceChange: function () {
+                districtListBox.html('');
+                districtSel.text('地区');
+                for (var i = 0; i < provinceList.length; i++) {
+                    var curProv = provinceList[i];
+                    if (curProv.name == provSel.text()) {
+                        var list = '';
+                        citySel.text("城市");
+                        for (var j = 0; j < curProv.cityList.length; j++) {
+                            var curCity = curProv.cityList[j];
+                            list += '<li>' + curCity.name + '</li>';
+                        }
+                        cityListBox.html(list);
+                        break;
+                    }
+                }
+            },
+            cityChange: function () {
+                districtSel.text('地区');
+                for (var i = 0; i < provinceList.length; i++) {
+                    var curProv = provinceList[i];
+                    if (curProv.name == provSel.text()) {
+                        for (var j = 0; j < curProv.cityList.length; j++) {
+                            var curCity = curProv.cityList[j];
+                            if (curCity.name == citySel.text()) {
+                                var list = '';
+                                for (var k = 0; k < curCity.areaList.length; k++) {
+                                    var curDistrict = curCity.areaList[k];
+                                    list += '<li>' + curDistrict + '</li>';
+                                }
+                                districtListBox.html(list);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        };
+
+        addressInit();
+    }
+</script>
+</body>
+</html>
